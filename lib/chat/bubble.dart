@@ -28,13 +28,13 @@ class BubbleSpecialThree extends StatelessWidget {
     this.isTextAnimating = false,
     this.isSender = true,
     required this.text,
-    this.color = Colors.white70,
+    this.color = Colors.black,
     this.tail = true,
     this.sent = false,
     this.delivered = false,
     this.seen = false,
     this.textStyle = const TextStyle(
-      color: Colors.black87,
+      color: Colors.black,
       fontSize: 16,
     ),
   }) : super(key: key);
@@ -79,6 +79,8 @@ class BubbleSpecialThree extends StatelessWidget {
               alignment: isSender ? Alignment.topRight : Alignment.topLeft,
               tail: tail),
           child: Container(
+            decoration:BoxDecoration(
+            ),
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * .7,
             ),
@@ -94,6 +96,7 @@ class BubbleSpecialThree extends StatelessWidget {
                         ? const EdgeInsets.only(left: 4, right: 20)
                         : const EdgeInsets.only(left: 4, right: 4),
                     child: AnimatedText(
+
                       text: text,
                       isAnemated: isTextAnimating,
                     )),

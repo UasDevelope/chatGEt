@@ -9,6 +9,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../Modules/home/Home_intro.dart';
 class UserModeView extends GetxController {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -55,7 +57,7 @@ class UserModeView extends GetxController {
       var user = await auth.signInWithEmailAndPassword(
           email: email.text, password: password.text);
       if (user != null) {
-        Get.to(Home());
+        Get.to(Homepage());
       }
       signinloading.value=false;
 
@@ -89,8 +91,8 @@ class UserModeView extends GetxController {
             .collection("user")
             .doc(googleSignInAccount.id)
             .set(userModel.fromjson());
-        AmeToast.sucesstoast("Data is stored sucessfully");
-        Get.to(Home());
+        AmeToast.sucesstoast("Login Successfully");
+        Get.to(Homepage());
       }
     } catch (error) {
       AmeToast.toast("$error");

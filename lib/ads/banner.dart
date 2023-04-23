@@ -21,7 +21,7 @@ class _BoxAdState extends State<BoxAd> {
   void initBanner() {
     _bannerAd = BannerAd(
       adUnitId:Platform.isAndroid
-      ?"ca-app-pub-3940256099942544/6300978111":"ca-app-pub-3940256099942544/6300978111",
+      ?"ca-app-pub-7329154532259868/9850064504":"ca-app-pub-7329154532259868/9850064504",
           // ? 'ca-app-pub-7329154532259868/8309177738'
           // : 'ca-app-pub-7329154532259868/8309177738',
 

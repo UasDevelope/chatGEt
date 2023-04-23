@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AnimatedText extends StatefulWidget {
   final String text;
@@ -15,14 +16,14 @@ class _AnimatedTextState extends State<AnimatedText> {
   Widget build(BuildContext context) {
     return widget.isAnemated
         ? AnimatedTextKit(
+      displayFullTextOnTap:true,
+
+            isRepeatingAnimation:true,
             animatedTexts: [
               TypewriterAnimatedText(
                 widget.text,
                 speed: const Duration(milliseconds: 30),
-                textStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                ),
+                textStyle:GoogleFonts.poppins(fontWeight:FontWeight.w300,color:Colors.black,fontSize:16)
               ),
             ],
             pause: const Duration(seconds: 1),
@@ -30,7 +31,8 @@ class _AnimatedTextState extends State<AnimatedText> {
           )
         : Text(
             widget.text,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
+            style:GoogleFonts.poppins(fontWeight:FontWeight.w300,color:Colors.black,fontSize:16)
+    ,
           );
   }
 }

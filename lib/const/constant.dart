@@ -2,7 +2,7 @@
 
 class Const {
   static const String API_KEY =
-      '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';
+      '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';
   static const String EXTRACT_API_KEY =
       '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';
 }

@@ -15,7 +15,9 @@ import 'package:lottie/lottie.dart';
 
 import '../../ads/ad_helper.dart';
 import '../../helper/cache.dart';
+import '../../main.dart';
 import '../../resources/cache_keys.dart';
+import '../../resources/images.dart';
 import '../../utils/textform.dart';
 import '../subscription/subs.dart';
 
@@ -112,93 +114,102 @@ class _ImgGenState extends State<ImgGen> {
         elevation: 10,
       ),
       backgroundColor: AppColors.solfColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            DefTextForm(
-                controller: _controller,
-                hintText: "Search",
-                onSubmitted: (value) async {
-                  if (numOfgen <5) {
-                    numOfgen++;
-                    images.clear();
-                    setState(() {
-                      isSearching = true;
-                    });
-                    final imagess = await ImageGeneratorAPI.generateImage(
-                        _controller.text.trim());
-                    images.addAll(imagess);
-                    setState(() {
-                      isSearching = false;
-                    });
-                    await CacheHelper.saveData(
-                        key: CacheKeys.numberOfGeneration, value: numOfgen);
-                  } else {
-                    showalertbox();
-                    // C.snack("You can only generate 3 images a day", context);
-                  }
-                }),
-            if (images.isNotEmpty)
-              SizedBox(
-                height:MediaQuery.of(context).size.height,
-                child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GridView.builder(
-                      shrinkWrap:true,
-                      physics:NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20),
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                            onTap: () {
-                              C.navTo(
-                                  context,
-                                  ImageView(
-                                    images: images,
-                                  ));
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color:AppColors.cayanColor,
-                                  borderRadius: BorderRadius.circular(12)),
-                              clipBehavior: Clip.antiAliasWithSaveLayer,
-                              child: Image.network(
-                                images[index].url!,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    return child;
-                                  }
-                                  return Container(
-                                    width: 50,
-                                    height: 100,
+      body:Container(
+        height:MediaQuery.of(context).size.height,
+        decoration:BoxDecoration(
+          image:DecorationImage(
+            fit:BoxFit.cover,
+            image:AssetImage(Images.background)
+          )
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DefTextForm(
+                  controller: _controller,
+                  hintText: "Search",
+                  onSubmitted: (value) async {
+                    if (numOfgen <5) {
+                      numOfgen++;
+                      images.clear();
+                      setState(() {
+                        isSearching = true;
+                      });
+                      final imagess = await ImageGeneratorAPI.generateImage(
+                          _controller.text.trim());
+                      images.addAll(imagess);
+                      setState(() {
+                        isSearching = false;
+                      });
+                      await CacheHelper.saveData(
+                          key: CacheKeys.numberOfGeneration, value: numOfgen);
+                    } else {
+                      showalertbox();
+                      // C.snack("You can only generate 3 images a day", context);
+                    }
+                  }),
+              if (images.isNotEmpty)
+                SizedBox(
+                  height:MediaQuery.of(context).size.height,
+                  child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: GridView.builder(
+                        shrinkWrap:true,
+                        physics:NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 20,
+                            crossAxisSpacing: 20),
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                              onTap: () {
+                                C.navTo(
+                                    context,
+                                    ImageView(
+                                      images: images,
+                                    ));
+                              },
+                              child: Container(
+                                width: 50,
+                                height: 100,
+                                decoration: BoxDecoration(
                                     color:AppColors.cayanColor,
+                                    borderRadius: BorderRadius.circular(12)),
+                                clipBehavior: Clip.antiAliasWithSaveLayer,
+                                child: Image.network(
+                                  images[index].url!,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child;
+                                    }
+                                    return Container(
+                                      width: 50,
+                                      height: 100,
+                                      color:AppColors.cayanColor,
 
-                                  );
-                                },
-                              ),
+                                    );
+                                  },
+                                ),
 
 
-                            ));
-                      },
-                      itemCount: images.length,
-                    )),
-              ),
-            if (isSearching) Lottie.asset('assets/searching.json'),
-            if (!isSearching && images.isEmpty)
-              Lottie.asset('assets/nosearch.json'),
-            if (!isSearching && images.isEmpty)
-               Text(
-                "Generate some Images",
-                style:GoogleFonts.poppins(fontWeight:FontWeight.w500,color:Colors.black,fontSize:16 ),
-              )
-          ],
+                              ));
+                        },
+                        itemCount: images.length,
+                      )),
+                ),
+              if (isSearching) Lottie.asset('assets/searching.json'),
+              if (!isSearching && images.isEmpty)
+                Lottie.asset('assets/nosearch.json'),
+              if (!isSearching && images.isEmpty)
+                Text(
+                  "Generate some Images",
+                  style:GoogleFonts.poppins(fontWeight:FontWeight.w500,color:Colors.black,fontSize:16 ),
+                )
+            ],
+          ),
         ),
       ),
       bottomNavigationBar:BoxAd(),
@@ -249,7 +260,7 @@ class _ImgGenState extends State<ImgGen> {
           actions: <Widget>[
             InkWell(
                 onTap: () {
-                  Get.to(Subscription());
+                  Get.to(MyApp());
                 },
                 child: Container(
                     height: 50,

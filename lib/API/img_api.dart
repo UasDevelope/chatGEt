@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 class ImageGeneratorAPI {
   static Future<List<ImageGenModel>> generateImage(String prompt,
-      [int count = 6]) async {
+      [int count = 4]) async {
     final size = CacheHelper.getData(key: CacheKeys.imageSize) ?? "512x512";
 
     try {

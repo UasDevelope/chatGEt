@@ -13,9 +13,11 @@ import 'package:chat_gpt/utils/drawer_item.dart';
 import 'package:chat_gpt/chat/chat.dart';
 import 'package:chat_gpt/chat/bubble.dart';
 import 'package:chat_gpt/helper/cache.dart';
+import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -24,14 +26,9 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:settings_ui/settings_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../ads/ad_helper.dart';
-import '../../ads/banner.dart';
-import '../../ads/intetialads.dart';
-import '../../ads/q_ad.dart';
 import '../../const/robot_icons.dart';
-import '../../resources/images.dart';
+import '../../example.dart';
 import '../../utils/components.dart';
 import '../subscription/subs.dart';
 import 'package:badges/badges.dart' as badges;
@@ -58,9 +55,11 @@ class _HomeState extends State<Home> {
 
   void _createInterstitialAd() {
     InterstitialAd.load(
-        adUnitId:Platform.isAndroid
-            ? 'ca-app-pub-3940256099942544/1033173712'
-            : "ca-app-pub-3940256099942544/1033173712",
+        adUnitId: notFoundIds.isEmpty
+            ? Platform.isAndroid
+                ? 'ca-app-pub-7329154532259868/9486268279'
+                : "ca-app-pub-7329154532259868/9486268279"
+            : "",
         request: request,
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (InterstitialAd ad) {
@@ -102,6 +101,7 @@ class _HomeState extends State<Home> {
     _interstitialAd!.show();
     _interstitialAd = null;
   }
+
   final TextEditingController _controller = TextEditingController();
   late final ScrollController _scrollController;
   final GlobalKey<FormState> _form = GlobalKey();
@@ -113,17 +113,18 @@ class _HomeState extends State<Home> {
   bool isEnabled = true;
   Map<int, String> chatText = {};
   int tempIndex = 0;
-  int myconversation=0;
-  int saveconverstion=0;
-  int clearconversation=0;
-  int Awesomeprompt=0;
+  int myconversation = 0;
+  int saveconverstion = 0;
+  int clearconversation = 0;
+  int Awesomeprompt = 0;
   int chatIndex = 0;
-  int setting =0;
-  int awesomeprompt=0;
-  int imagegeneration=0;
-  int subscription=0;
+  int setting = 0;
+  int awesomeprompt = 0;
+  int imagegeneration = 0;
+  int subscription = 0;
   String fileName = '';
   String allPrompt = '';
+  bool _canVibrate = true;
   List<String> chats = [];
   final DateFormat dateFormat = DateFormat("yyyy-mm-dd");
   int reminatodatindex =
@@ -133,7 +134,8 @@ class _HomeState extends State<Home> {
   bool isVoiceEnabled = false;
   @override
   void initState() {
-    // _createInterstitialAd();
+    _createInterstitialAd();
+    print(notFoundIds.isEmpty ? "usama" : "Found");
     setState(() {});
     getchats();
     _scrollController = ScrollController();
@@ -145,7 +147,7 @@ class _HomeState extends State<Home> {
   void getchats() async {
     chats = await CacheHelper.getStrings('names') ?? [];
     final today =
-    int.parse(dateFormat.format(DateTime.now()).split("-").join());
+        int.parse(dateFormat.format(DateTime.now()).split("-").join());
     CacheHelper.saveData(key: CacheKeys.todaysDate, value: today);
   }
 
@@ -165,9 +167,9 @@ class _HomeState extends State<Home> {
       }
     });
     return Scaffold(
-      backgroundColor:AppColors.solfColor,
+      backgroundColor: AppColors.solfColor,
       appBar: AppBar(
-        backgroundColor:AppColors.hardColor,
+        backgroundColor: AppColors.hardColor,
         // title: const BoxAd(),
         centerTitle: true,
         automaticallyImplyLeading: true,
@@ -177,17 +179,17 @@ class _HomeState extends State<Home> {
             child: InkWell(
                 onTap: () async {
                   setting++;
-                if(setting%3==0){
-                  _showInterstitialAd();
-
-                }else{
-
-                }
+                  if (setting % 3 == 0) {
+                    _showInterstitialAd();
+                  } else {}
                   settingsbottomSheet();
                   print("object");
                   // QestionAd.loadSaveAd();
                 },
-                child: Icon(Icons.settings,color:Colors.black,)),
+                child: Icon(
+                  Icons.settings,
+                  color: Colors.black,
+                )),
           )
         ],
         title: InkWell(
@@ -201,7 +203,7 @@ class _HomeState extends State<Home> {
             height: 40,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color:AppColors.solfColor,
+                color: AppColors.solfColor,
                 border: Border.all(width: 0.2, color: AppColors.hardColor)),
             // width: MediaQuery.of(context).size.width ,
             child: Row(
@@ -245,219 +247,224 @@ class _HomeState extends State<Home> {
         ),
         elevation: 10,
       ),
-      body: SafeArea(
-        child: chat.isNotEmpty
-            ? Stack(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height - 120,
-              child: ListView.separated(
-                  shrinkWrap: true,
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    chatIndex = index;
+      body: DoubleBack(
+        message: "Tap to again to exit",
+        child: SafeArea(
+          child: chat.isNotEmpty
+              ? Stack(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 120,
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          controller: _scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            chatIndex = index;
 
-                    if (index == chat.length) {
-                      if (chat.length >= 2) {
-                        // _scrollController.jumpTo(
-                        //   _scrollController.position.maxScrollExtent,
-                        // );
-                      }
-                      return const SizedBox(
-                        height: 15,
-                      );
-                    }
-                    if (!chatText.containsKey(index)) {
-                      chatText
-                          .addEntries({index: chat[index].text}.entries);
+                            if (index == chat.length) {
+                              if (chat.length >= 2) {
+                                // _scrollController.jumpTo(
+                                //   _scrollController.position.maxScrollExtent,
+                                // );
+                              }
+                              return const SizedBox(
+                                height: 15,
+                              );
+                            }
+                            if (!chatText.containsKey(index)) {
+                              chatText.addEntries(
+                                  {index: chat[index].text}.entries);
 
-                      // print(chatText);
-                    }
-                    return InkWell(
-                      onLongPress: () {
-                        Clipboard.setData(
-                            ClipboardData(text: chat[index].text));
-                        Fluttertoast.showToast(msg: "Copied");
-                      },
-                      onTap: () {
-                        chat[index].isDone = false;
-                      },
-                      child: BubbleSpecialThree(
-                        text: chat[index].type == ChatType.user
-                            ? chat[index].text.trim()
-                            : chat[index].text.trim(),
-                        color: chat[index].type == ChatType.user
-                            ? const Color(0xff0d8266)
-                            : const Color(0xff3c3d49),
-                        tail: true,
-                        delivered: true,
-                        isTextAnimating:
-                        chat[index].type == ChatType.bot &&
-                            chat[index].isDone,
-                        isSender: chat[index].type == ChatType.user
-                            ? true
-                            : false,
-                        seen: true,
-                        textStyle: const TextStyle(
-                            color: Colors.white, fontSize: 16),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(
-                    height: 10,
-                  ),
-                  itemCount: chat.length + 1),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: IconButton(
-                  onPressed: () {
-                    _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent + 10,
-                        duration: const Duration(seconds: 2),
-                        curve: Curves.fastLinearToSlowEaseIn);
-                  },
-                  icon: const Icon(
-                    Icons.arrow_downward,
-                    color: Colors.black,
-                  )),
-            )
-          ],
-        )
-            : Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                const Icon(
-                  Icons.thunderstorm,
-                  size: 50,
-                  color: Colors.black,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                const Text(
-                  "Capabilities",
-                  style: TextStyle(color: Colors.black, fontSize: 19),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                Container(
-                  width: 250,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                      color:AppColors.hardColor,
-                      borderRadius: BorderRadius.circular(12)),
-                  child: const Text(
-                    'Allows user to provide follow-up corrections',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
+                              // print(chatText);
+                            }
+                            return InkWell(
+                              onLongPress: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: chat[index].text));
+                                Fluttertoast.showToast(msg: "Copied");
+                              },
+                              onTap: () {
+                                chat[index].isDone = false;
+                              },
+                              child: BubbleSpecialThree(
+                                text: chat[index].text.isEmpty
+                                    ? "solobot is typing....."
+                                    : chat[index].type == ChatType.user
+                                        ? chat[index].text.trim()
+                                        : chat[index].text.trim(),
+                                color: chat[index].type == ChatType.user
+                                    ? const Color.fromRGBO(78, 223, 255, 0.1)
+                                    : const Color.fromRGBO(149, 112, 255, 0.05),
+                                tail: true,
+                                delivered: true,
+                                isTextAnimating:
+                                    chat[index].type == ChatType.bot &&
+                                        chat[index].isDone,
+                                isSender: chat[index].type == ChatType.user
+                                    ? true
+                                    : false,
+                                seen: true,
+                                textStyle: const TextStyle(
+                                    color: Colors.black, fontSize: 16),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) => const SizedBox(
+                                height: 10,
+                              ),
+                          itemCount: chat.length + 1),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: IconButton(
+                          onPressed: () {
+                            _scrollController.animateTo(
+                                _scrollController.position.maxScrollExtent + 10,
+                                duration: const Duration(seconds: 2),
+                                curve: Curves.fastLinearToSlowEaseIn);
+                          },
+                          icon: const Icon(
+                            Icons.arrow_downward,
+                            color: Colors.black,
+                          )),
+                    )
+                  ],
+                )
+              : Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: <Widget>[
+                        const Icon(
+                          Icons.thunderstorm,
+                          size: 50,
+                          color: Colors.black,
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const Text(
+                          "Capabilities",
+                          style: TextStyle(color: Colors.black, fontSize: 19),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Container(
+                          width: 250,
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                              color: AppColors.hardColor,
+                              borderRadius: BorderRadius.circular(12)),
+                          child: const Text(
+                            'Allows user to provide follow-up corrections',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Container(
+                          width: 250,
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                              color: AppColors.hardColor,
+                              borderRadius: BorderRadius.circular(12)),
+                          child: const Text(
+                            'Trained to decline inappropriate requests',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.black, fontSize: 15),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const Icon(
+                          Icons.wb_sunny_outlined,
+                          size: 50,
+                          color: Colors.black,
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const Text(
+                          "Examples",
+                          style: TextStyle(color: Colors.black, fontSize: 19),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            _controller.text =
+                                'Explain quantum computing in simple terms';
+                          },
+                          child: Container(
+                            width: 250,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                                color: AppColors.hardColor,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: const Text(
+                              'Explain quantum computing in simple terms',
+                              textAlign: TextAlign.center,
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 15),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            _controller.text = widget.prompt == null
+                                ? 'Got any creative ideas for a 10 year old’s birthday?'
+                                : widget.prompt.toString();
+
+                            // widget.prompt!.isEmpty?
+                            // _controller.text =
+                            //     'Got any creative ideas for a 10 year old’s birthday?':widget.prompt;
+                          },
+                          child: Container(
+                            width: 250,
+                            padding: EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                                color: AppColors.hardColor,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Text(
+                              widget.prompt == null
+                                  ? 'Got any creative ideas for a 10 year old’s birthday?'
+                                  : widget.prompt.toString(),
+                              textAlign: TextAlign.center,
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 15),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text(
+                          "Unofficial",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                Container(
-                  width: 250,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                      color:AppColors.hardColor,
-                      borderRadius: BorderRadius.circular(12)),
-                  child: const Text(
-                    'Trained to decline inappropriate requests',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black, fontSize: 15),
-                  ),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                const Icon(
-                  Icons.wb_sunny_outlined,
-                  size: 50,
-                  color: Colors.black,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                const Text(
-                  "Examples",
-                  style: TextStyle(color: Colors.black, fontSize: 19),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                InkWell(
-                  onTap: () {
-                    _controller.text =
-                    'Explain quantum computing in simple terms';
-                  },
-                  child: Container(
-                    width: 250,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                        color:AppColors.hardColor,
-
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Text(
-                      'Explain quantum computing in simple terms',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black, fontSize: 15),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                InkWell(
-                  onTap: () {
-                    _controller.text = widget.prompt == null
-                        ? 'Got any creative ideas for a 10 year old’s birthday?'
-                        : widget.prompt.toString();
-
-                    // widget.prompt!.isEmpty?
-                    // _controller.text =
-                    //     'Got any creative ideas for a 10 year old’s birthday?':widget.prompt;
-                  },
-                  child: Container(
-                    width: 250,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                        color:AppColors.hardColor,
-
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Text(
-                      widget.prompt == null
-                          ? 'Got any creative ideas for a 10 year old’s birthday?'
-                          : widget.prompt.toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black, fontSize: 15),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text(
-                  "Unofficial",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
       bottomNavigationBar: Form(
         key: _form,
         child: Padding(
           padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
@@ -473,53 +480,58 @@ class _HomeState extends State<Home> {
                     minLines: 1,
                     maxLines: 4,
                     controller: _controller,
-                    style:GoogleFonts.poppins(fontWeight:FontWeight.w500,fontSize:14,color:Colors.black),
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: Colors.black),
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'Must not be empty';
                       }
                       return null;
                     },
-
                     decoration: InputDecoration(
-                        border: InputBorder.none,
-                        fillColor:AppColors.cayanColor,
-                        filled: true,
-                        suffix: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!isEnabled)
-                              const SpinKitThreeBounce(
-                                color:Colors.black,
-                                size: 20,
-                              ),
-                            if (isEnabled)
-                              // InkWell(
-                              //   onTap: () async {
-                              //     final res = await _imageAPI
-                              //         .getImage(ImageSource.gallery);
-                              //     setState(() {
-                              //       _controller.text = res;
-                              //     });
-                              //   },
-                              //   child: const Icon(Icons.camera_alt_outlined,
-                              //       color: Colors.white),
-                              // ),
+                      border: InputBorder.none,
+                      fillColor: AppColors.cayanColor,
+                      filled: true,
+                      suffix: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!isEnabled)
+                            const SpinKitThreeBounce(
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                          if (isEnabled)
+                            // InkWell(
+                            //   onTap: () async {
+                            //     final res = await _imageAPI
+                            //         .getImage(ImageSource.gallery);
+                            //     setState(() {
+                            //       _controller.text = res;
+                            //     });
+                            //   },
+                            //   child: const Icon(Icons.camera_alt_outlined,
+                            //       color: Colors.white),
+                            // ),
                             const SizedBox(
                               width: 10,
                             ),
-                            if (isEnabled)
-                              InkWell(
-                                onTap: () => send(),
-                                child: const Icon(
-                                  Icons.send,
-                                  color: Colors.green,
-                                ),
+                          if (isEnabled)
+                            InkWell(
+                              onTap: () => send(),
+                              child: const Icon(
+                                Icons.send,
+                                color: Colors.green,
                               ),
-                          ],
-                        ),
-                        hintStyle: GoogleFonts.poppins(fontWeight:FontWeight.w500,color:Colors.black,fontSize:14),
-                        hintText: "Ask Here !",
+                            ),
+                        ],
+                      ),
+                      hintStyle: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                          fontSize: 14),
+                      hintText: "Ask Here !",
                     ),
                   ),
                 ),
@@ -529,7 +541,7 @@ class _HomeState extends State<Home> {
         ),
       ),
       drawer: Drawer(
-        backgroundColor:AppColors.hardColor,
+        backgroundColor: AppColors.hardColor,
         child: DrawerHeader(
           child: Column(
             children: [
@@ -539,7 +551,7 @@ class _HomeState extends State<Home> {
                 onPressed: () {
                   C.pop(context);
                   myconversation++;
-                  if(myconversation%2==0){
+                  if (myconversation % 2 == 0) {
                     _showInterstitialAd();
                   }
                   C.navTo(context, MyConversations(chats: chats));
@@ -553,7 +565,7 @@ class _HomeState extends State<Home> {
                 text: "Save Conversation",
                 onPressed: () async {
                   saveconverstion++;
-                  if(saveconverstion%2==0){
+                  if (saveconverstion % 2 == 0) {
                     _showInterstitialAd();
                   }
                   final chatPdf = await PdfConversationExport.exportChat(chat);
@@ -571,7 +583,7 @@ class _HomeState extends State<Home> {
                 text: "Clear Conversation",
                 onPressed: () async {
                   clearconversation++;
-                  if(clearconversation%5==0){
+                  if (clearconversation % 5 == 0) {
                     _showInterstitialAd();
                   }
                   setState(() {
@@ -594,7 +606,7 @@ class _HomeState extends State<Home> {
                 text: "Awsome Prompt",
                 onPressed: () async {
                   awesomeprompt++;
-                  if(awesomeprompt%2==0){
+                  if (awesomeprompt % 2 == 0) {
                     _showInterstitialAd();
                   }
                   C.pop(context);
@@ -606,7 +618,7 @@ class _HomeState extends State<Home> {
                 text: "Image Generator",
                 onPressed: () async {
                   imagegeneration++;
-                  if(imagegeneration%5==0){
+                  if (imagegeneration % 5 == 0) {
                     _showInterstitialAd();
                   }
                   C.pop(context);
@@ -621,11 +633,11 @@ class _HomeState extends State<Home> {
                 text: "Subscriptions",
                 onPressed: () async {
                   subscription++;
-                  if(subscription%2==0){
+                  if (subscription % 2 == 0) {
                     _showInterstitialAd();
                   }
                   C.pop(context);
-                  C.navToDown(context, const Subscription());
+                  C.navToDown(context, const subscriptionzz());
                 },
               ),
               DrawerItem(
@@ -633,7 +645,7 @@ class _HomeState extends State<Home> {
                 text: "Settings",
                 onPressed: () async {
                   setting++;
-                  if(setting%2==0){
+                  if (setting % 2 == 0) {
                     // _showInterstitialAd();
                   }
                   C.pop(context);
@@ -692,7 +704,7 @@ class _HomeState extends State<Home> {
 
         _controller.clear();
         if (openAiAPI.totalTokens > 150) {
-         _showInterstitialAd();
+          _showInterstitialAd();
           tempIndex = 0;
         }
         setState(() {
@@ -704,7 +716,7 @@ class _HomeState extends State<Home> {
         });
 
         todayQuestionIndex++;
-        if(todayQuestionIndex%8==0){
+        if (todayQuestionIndex % 8 == 0) {
           _showInterstitialAd();
         }
         reminatodatindex--;
@@ -714,6 +726,9 @@ class _HomeState extends State<Home> {
             key: CacheKeys.remainquestion, value: reminatodatindex);
       }
     } else {
+      if (_canVibrate) {
+        Vibrate.feedback(FeedbackType.error);
+      }
       showalertbox();
     }
   }
@@ -726,16 +741,21 @@ class _HomeState extends State<Home> {
           title: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [InkWell(
-              onTap:(){
-                // QestionAd.loadSaveAd();
-                Get.back();
-              },
-              child:Icon(Icons.cancel,color:Colors.black,),
-            )],
+            children: [
+              InkWell(
+                onTap: () {
+                  // QestionAd.loadSaveAd();
+                  Get.back();
+                },
+                child: Icon(
+                  Icons.cancel,
+                  color: Colors.black,
+                ),
+              )
+            ],
           ),
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           backgroundColor: AppColors.cayanColor,
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -743,7 +763,7 @@ class _HomeState extends State<Home> {
               Text(
                 "Get messages",
                 style: GoogleFonts.inter(
-                    fontSize:25,
+                    fontSize: 25,
                     fontWeight: FontWeight.w700,
                     color: Colors.white),
               ),
@@ -753,9 +773,9 @@ class _HomeState extends State<Home> {
               Text(
                 "You've run out of chat . Let's watch one video ad to earn 6 more messages",
                 style: GoogleFonts.poppins(
-                  fontSize:20,
+                  fontSize: 20,
                   fontWeight: FontWeight.w500,
-                  color:AppColors.solfColor,
+                  color: AppColors.solfColor,
                 ),
                 textAlign: TextAlign.center,
               )
@@ -764,7 +784,7 @@ class _HomeState extends State<Home> {
           actions: <Widget>[
             InkWell(
                 onTap: () {
-                  Get.to(Subscription());
+                  Get.to(subscriptionzz());
                 },
                 child: Container(
                     height: 50,
@@ -867,10 +887,8 @@ class _HomeState extends State<Home> {
             lightTheme: const SettingsThemeData(
                 titleTextColor: Colors.white,
                 settingsListBackground: AppColors.hardColor,
-                settingsSectionBackground: AppColors.solfColor
-            ),
+                settingsSectionBackground: AppColors.solfColor),
             sections: [
-
               SettingsSection(
                 title: Row(
                   children: [
@@ -879,10 +897,9 @@ class _HomeState extends State<Home> {
                           C.pop(context);
                         },
                         child: const Icon(Icons.arrow_back_ios)),
-                    Text(
-                      'Settings'.toUpperCase(),
-                      style: GoogleFonts.poppins(fontWeight:FontWeight.w700,color:Colors.black)
-                    ),
+                    Text('Settings'.toUpperCase(),
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700, color: Colors.black)),
                   ],
                 ),
                 tiles: <SettingsTile>[
@@ -901,7 +918,7 @@ class _HomeState extends State<Home> {
                     ),
                     onPressed: (context) {
                       C.pop(context);
-                      C.navToDown(context, const Subscription());
+                      C.navToDown(context, subscriptionzz());
                     },
                   ),
                   SettingsTile.navigation(
@@ -998,8 +1015,11 @@ class _HomeState extends State<Home> {
                 ],
                 title: Text(
                   'Support'.toUpperCase(),
-                                style:GoogleFonts.poppins(fontWeight:FontWeight.w400,fontSize:20,color:Colors.black,letterSpacing:2),
-
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 20,
+                      color: Colors.black,
+                      letterSpacing: 2),
                 ),
               ),
               SettingsSection(
@@ -1035,7 +1055,7 @@ class _HomeState extends State<Home> {
                     onPressed: (context) async {
                       if (Platform.isAndroid) {
                         final url = Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.chat.botAi");
+                            "https://play.google.com/store/apps/details?id=com.ChatGET.Ai");
                         if (!await launchUrl(url,
                             mode: LaunchMode.externalApplication)) {
                           throw Exception('Could not launch $url');
@@ -1053,10 +1073,13 @@ class _HomeState extends State<Home> {
                 ],
                 title: Text(
                   'about'.toUpperCase(),
-                  style:GoogleFonts.poppins(fontWeight:FontWeight.w400,fontSize:20,color:Colors.black,letterSpacing:2),
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 20,
+                      color: Colors.black,
+                      letterSpacing: 2),
                 ),
               ),
-
             ],
           ),
         );
