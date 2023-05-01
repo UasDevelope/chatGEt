@@ -13,7 +13,7 @@ import 'animated_text.dart';
 
 class BubbleSpecialThree extends StatelessWidget {
   final bool isSender;
-  final String text;
+  final Widget text;
   final bool isTextAnimating;
   final bool tail;
   final Color color;
@@ -95,11 +95,7 @@ class BubbleSpecialThree extends StatelessWidget {
                     padding: stateTick
                         ? const EdgeInsets.only(left: 4, right: 20)
                         : const EdgeInsets.only(left: 4, right: 4),
-                    child: AnimatedText(
-
-                      text: text,
-                      isAnemated: isTextAnimating,
-                    )),
+                    child:text),
                 stateIcon != null && stateTick
                     ? Positioned(
                         bottom: 0,

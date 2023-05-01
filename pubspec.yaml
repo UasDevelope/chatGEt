@@ -35,10 +35,12 @@ dependencies:
   shared_preferences: ^2.0.17
   shrink_sidemenu: ^2.0.0+2-null-safety
   tab_indicator_styler: ^2.0.0
+  control_style: ^0.0.3
   url_launcher: ^6.1.7
   firebase_core: ^2.8.0
   firebase_auth: ^4.3.0
   google_fonts: ^4.0.3
+  flutter_switch: ^0.3.2
 #  flutter_inapp_purchase: ^5.0.0
   get: ^4.6.5
   loading_overlay: ^0.3.0

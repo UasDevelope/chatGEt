@@ -17,6 +17,7 @@ import 'package:double_back_to_close/double_back_to_close.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -126,6 +127,8 @@ class _HomeState extends State<Home> {
   String allPrompt = '';
   bool _canVibrate = true;
   List<String> chats = [];
+  bool status3 = false;
+
   final DateFormat dateFormat = DateFormat("yyyy-mm-dd");
   int reminatodatindex =
       CacheHelper.getData(key: CacheKeys.remainquestion) ?? 5;
@@ -250,215 +253,341 @@ class _HomeState extends State<Home> {
       body: DoubleBack(
         message: "Tap to again to exit",
         child: SafeArea(
-          child: chat.isNotEmpty
-              ? Stack(
+            child: ListView(
+              children: [
+                //     Padding(
+                //       padding: const EdgeInsets.only(left:10,top:10),
+                //       child: Row(
+                //         mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           InkWell(
+                //             onTap: () {
+                //               settingsbottomSheet();
+                //             },
+                //             child:Image.asset("assets/images/Vector.png"),
+                //           ),
+                // Padding(
+                //         padding: const EdgeInsets.only(right: 20.0),
+                //         child: InkWell(
+                //             onTap: () async {
+                //               setting++;
+                //               if (setting % 3 == 0) {
+                //                 _showInterstitialAd();
+                //               } else {}
+                //               settingsbottomSheet();
+                //               print("object");
+                //               // QestionAd.loadSaveAd();
+                //             },
+                //             child: Icon(
+                //               Icons.settings,
+                //               color: Colors.black,
+                //             )),
+                //       )
+                //         ],
+                //       ),
+                //     ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height - 120,
-                      child: ListView.separated(
-                          shrinkWrap: true,
-                          controller: _scrollController,
-                          physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            chatIndex = index;
+                    Container(
+                      width: 200,
+                      margin: EdgeInsets.only(top: 30, left: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border:
+                              Border.all(width: 1, color: AppColors.cayanColor)),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 0,
+                          ),
+                          Text(
+                            "Read Aloud",
+                            style: GoogleFonts.electrolize(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: Colors.black),
+                          ),
+                          FlutterSwitch(
+                            activeToggleBorder:
+                                Border.all(width: 2, color: AppColors.cayanColor),
+                            // inactiveIcon: Center(
+                            //   child: Image.asset(
+                            //     "assets/images/toggle.png",
+                            //     fit: BoxFit.fill,
+                            //   ),
+                            // ),
+                            inactiveColor: Color(0xff4EFF95),
+                            activeIcon: Text(
+                              "on",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.black),
+                            ),
+                            activeSwitchBorder:
+                                Border.all(width: 1, color: Colors.grey),
+                            // showOnOff: true,
+                            activeColor: Colors.red,
+                            value: isVoiceEnabled,
+                            onToggle: (val) {
+                              isVoiceEnabled = val;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                        onTap: () {
+                          chat.clear();
+                        },
+                        child: Container(
+                          height: 30,
+                          margin: EdgeInsets.only(top: 30, right: 10),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  width: 1, color: AppColors.cayanColor)),
+                          child: Center(
+                            child: Text(
+                              "Clear Conversaion",
+                              style: GoogleFonts.electrolize(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ))
+                  ],
+                ),
+                chat.isNotEmpty
+                    ? Stack(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height - 120,
+                            child: ListView.separated(
+                                shrinkWrap: true,
+                                controller: _scrollController,
+                                physics: const BouncingScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  chatIndex = index;
 
-                            if (index == chat.length) {
-                              if (chat.length >= 2) {
-                                // _scrollController.jumpTo(
-                                //   _scrollController.position.maxScrollExtent,
-                                // );
-                              }
-                              return const SizedBox(
-                                height: 15,
-                              );
-                            }
-                            if (!chatText.containsKey(index)) {
-                              chatText.addEntries(
-                                  {index: chat[index].text}.entries);
+                                  if (index == chat.length) {
+                                    if (chat.length >= 2) {
+                                      // _scrollController.jumpTo(
+                                      //   _scrollController.position.maxScrollExtent,
+                                      // );
+                                    }
+                                    return const SizedBox(
+                                      height: 15,
+                                    );
+                                  }
+                                  if (!chatText.containsKey(index)) {
+                                    chatText.addEntries(
+                                        {index: chat[index].text}.entries);
 
-                              // print(chatText);
-                            }
-                            return InkWell(
-                              onLongPress: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: chat[index].text));
-                                Fluttertoast.showToast(msg: "Copied");
-                              },
-                              onTap: () {
-                                chat[index].isDone = false;
-                              },
-                              child: BubbleSpecialThree(
-                                text: chat[index].text.isEmpty
-                                    ? "solobot is typing....."
-                                    : chat[index].type == ChatType.user
-                                        ? chat[index].text.trim()
-                                        : chat[index].text.trim(),
-                                color: chat[index].type == ChatType.user
-                                    ? const Color.fromRGBO(78, 223, 255, 0.1)
-                                    : const Color.fromRGBO(149, 112, 255, 0.05),
-                                tail: true,
-                                delivered: true,
-                                isTextAnimating:
-                                    chat[index].type == ChatType.bot &&
-                                        chat[index].isDone,
-                                isSender: chat[index].type == ChatType.user
-                                    ? true
-                                    : false,
-                                seen: true,
-                                textStyle: const TextStyle(
-                                    color: Colors.black, fontSize: 16),
+                                    // print(chatText);
+                                  }
+                                  return InkWell(
+                                      onLongPress: () {
+                                        Clipboard.setData(ClipboardData(
+                                            text: chat[index].text));
+                                        Fluttertoast.showToast(msg: "Copied");
+                                      },
+                                      onTap: () {
+                                        chat[index].isDone = false;
+                                      },
+                                      child: BubbleSpecialThree(
+                                        text: Text(
+                                          chat[index].type == ChatType.user
+                                              ? chat[index].text.trim()
+                                              : isEnabled
+                                                  ? chat[index].text.trim()
+                                                  : "",
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w300),
+                                        ),
+                                        color: chat[index].type == ChatType.user
+                                            ? const Color.fromRGBO(
+                                                78, 223, 255, 0.1)
+                                            : const Color.fromRGBO(
+                                                149, 112, 255, 0.05),
+                                        tail: true,
+                                        delivered: true,
+                                        isTextAnimating:
+                                            chat[index].type == ChatType.bot &&
+                                                chat[index].isDone,
+                                        isSender:
+                                            chat[index].type == ChatType.user
+                                                ? true
+                                                : false,
+                                        seen: true,
+                                        textStyle: const TextStyle(
+                                            color: Colors.black, fontSize: 16),
+                                      ));
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                itemCount: chat.length + 1),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: IconButton(
+                                onPressed: () {
+                                  _scrollController.animateTo(
+                                      _scrollController.position.maxScrollExtent +
+                                          10,
+                                      duration: const Duration(seconds: 2),
+                                      curve: Curves.fastLinearToSlowEaseIn);
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_downward,
+                                  color: Colors.black,
+                                )),
+                          )
+                        ],
+                      )
+                    : Center(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: <Widget>[
+                              const Icon(
+                                Icons.thunderstorm,
+                                size: 50,
+                                color: Colors.black,
                               ),
-                            );
-                          },
-                          separatorBuilder: (context, index) => const SizedBox(
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              const Text(
+                                "Capabilities",
+                                style:
+                                    TextStyle(color: Colors.black, fontSize: 19),
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              Container(
+                                width: 250,
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                    color: AppColors.hardColor,
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: const Text(
+                                  'Allows user to provide follow-up corrections',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              Container(
+                                width: 250,
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                    color: AppColors.hardColor,
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: const Text(
+                                  'Trained to decline inappropriate requests',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 15),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              const Icon(
+                                Icons.wb_sunny_outlined,
+                                size: 50,
+                                color: Colors.black,
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              const Text(
+                                "Examples",
+                                style:
+                                    TextStyle(color: Colors.black, fontSize: 19),
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  _controller.text =
+                                      'Explain quantum computing in simple terms';
+                                },
+                                child: Container(
+                                  width: 250,
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                      color: AppColors.hardColor,
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: const Text(
+                                    'Explain quantum computing in simple terms',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 15),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  _controller.text = widget.prompt == null
+                                      ? 'Got any creative ideas for a 10 year old’s birthday?'
+                                      : widget.prompt.toString();
+
+                                  // widget.prompt!.isEmpty?
+                                  // _controller.text =
+                                  //     'Got any creative ideas for a 10 year old’s birthday?':widget.prompt;
+                                },
+                                child: Container(
+                                  width: 250,
+                                  padding: EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                      color: AppColors.hardColor,
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Text(
+                                    widget.prompt == null
+                                        ? 'Got any creative ideas for a 10 year old’s birthday?'
+                                        : widget.prompt.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 15),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
                                 height: 10,
                               ),
-                          itemCount: chat.length + 1),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton(
-                          onPressed: () {
-                            _scrollController.animateTo(
-                                _scrollController.position.maxScrollExtent + 10,
-                                duration: const Duration(seconds: 2),
-                                curve: Curves.fastLinearToSlowEaseIn);
-                          },
-                          icon: const Icon(
-                            Icons.arrow_downward,
-                            color: Colors.black,
-                          )),
-                    )
-                  ],
-                )
-              : Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: <Widget>[
-                        const Icon(
-                          Icons.thunderstorm,
-                          size: 50,
-                          color: Colors.black,
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        const Text(
-                          "Capabilities",
-                          style: TextStyle(color: Colors.black, fontSize: 19),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Container(
-                          width: 250,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                              color: AppColors.hardColor,
-                              borderRadius: BorderRadius.circular(12)),
-                          child: const Text(
-                            'Allows user to provide follow-up corrections',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                            ),
+                              const Text(
+                                "Unofficial",
+                                style:
+                                    TextStyle(color: Colors.white, fontSize: 18),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Container(
-                          width: 250,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                              color: AppColors.hardColor,
-                              borderRadius: BorderRadius.circular(12)),
-                          child: const Text(
-                            'Trained to decline inappropriate requests',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.black, fontSize: 15),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        const Icon(
-                          Icons.wb_sunny_outlined,
-                          size: 50,
-                          color: Colors.black,
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        const Text(
-                          "Examples",
-                          style: TextStyle(color: Colors.black, fontSize: 19),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _controller.text =
-                                'Explain quantum computing in simple terms';
-                          },
-                          child: Container(
-                            width: 250,
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                                color: AppColors.hardColor,
-                                borderRadius: BorderRadius.circular(12)),
-                            child: const Text(
-                              'Explain quantum computing in simple terms',
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 15),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _controller.text = widget.prompt == null
-                                ? 'Got any creative ideas for a 10 year old’s birthday?'
-                                : widget.prompt.toString();
-
-                            // widget.prompt!.isEmpty?
-                            // _controller.text =
-                            //     'Got any creative ideas for a 10 year old’s birthday?':widget.prompt;
-                          },
-                          child: Container(
-                            width: 250,
-                            padding: EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                                color: AppColors.hardColor,
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Text(
-                              widget.prompt == null
-                                  ? 'Got any creative ideas for a 10 year old’s birthday?'
-                                  : widget.prompt.toString(),
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 15),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Unofficial",
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-        ),
+                      ),
+              ],
+            )),
       ),
       bottomNavigationBar: Form(
         key: _form,
@@ -541,8 +670,10 @@ class _HomeState extends State<Home> {
         ),
       ),
       drawer: Drawer(
+        elevation:30,
         backgroundColor: AppColors.hardColor,
         child: DrawerHeader(
+          curve:Curves.slowMiddle,
           child: Column(
             children: [
               DrawerItem(
@@ -881,7 +1012,7 @@ class _HomeState extends State<Home> {
         return Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: SettingsList(
-            physics: const NeverScrollableScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             // shrinkWrap: true,
             // platform: DevicePlatform.iOS,
             lightTheme: const SettingsThemeData(
@@ -889,6 +1020,25 @@ class _HomeState extends State<Home> {
                 settingsListBackground: AppColors.hardColor,
                 settingsSectionBackground: AppColors.solfColor),
             sections: [
+              CustomSettingsSection(
+                  child: Padding(
+                padding: const EdgeInsets.only(top: 30),
+                child: Column(
+                  children: [
+                    Text(
+                      "Settings",
+                      style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.black),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Image.asset("assets/images/logo.png")
+                  ],
+                ),
+              )),
               SettingsSection(
                 title: Row(
                   children: [

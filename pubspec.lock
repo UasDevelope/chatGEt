@@ -129,6 +129,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
+  control_style:
+    dependency: "direct main"
+    description:
+      name: control_style
+      sha256: "80eb061f3dcdf4d15e57e59ff0dccc0d0d3eeaa320f3f950fae543b0156c7822"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
   convert:
     dependency: transitive
     description:
@@ -379,6 +387,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.6"
+  flutter_switch:
+    dependency: "direct main"
+    description:
+      name: flutter_switch
+      sha256: b91477f926bba135d2d203d7b24367492662d8d9c3aa6adb960b14c1087d3c41
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
